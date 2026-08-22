@@ -1,0 +1,17 @@
+# created by virtualenv automatically
+# Virtual environment
+.venv/
+# PyInstaller artifacts
+build/
+dist/
+*.spec
+# Nuitka artifacts
+*.build/
+*.dist/
+# app data
+saved-tables/
+# Python cache
+__pycache__/
+*.py[cod]
+# IDE files
+.idea/
