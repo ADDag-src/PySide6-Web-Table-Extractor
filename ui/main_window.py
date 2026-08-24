@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
 from ui.website_select_widget import WebsiteSelectWidget
+from ui.table_select_widget import TableSelectPreviewWidget
 
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 1000
@@ -18,10 +19,15 @@ class MainWindow(QMainWindow):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
+        main_layout.setSpacing(0)
 
         # ---|website select top row|--- #
         self.web_select_widget = WebsiteSelectWidget()
         main_layout.addWidget(self.web_select_widget)
+
+        # ---|table select and preview row|--- #
+        self.table_select_widget = TableSelectPreviewWidget()
+        main_layout.addWidget(self.table_select_widget)
 
         # -----|signal connections|----- #
         self.web_select_widget.websiteLookUpClicked.connect(self.website_lookup_clicked)
