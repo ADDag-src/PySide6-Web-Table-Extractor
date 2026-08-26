@@ -59,3 +59,6 @@ class WebsiteSelectWidget(QWidget):
         row_layout.addStretch()
 
         outer_layout.addLayout(row_layout)
+
+    def reset(self):
+        self.url_input.clear()

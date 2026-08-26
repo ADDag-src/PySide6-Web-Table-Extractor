@@ -32,7 +32,7 @@ class TableSelectPreviewWidget(QWidget):
 
         # --|left table list|-- #
         self.list_widget = QListWidget()
-        self.list_widget.setMinimumHeight(400)
+        self.list_widget.setMinimumHeight(500)
         self.list_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         list_scroll = QScrollArea()
@@ -41,7 +41,7 @@ class TableSelectPreviewWidget(QWidget):
 
         # --|right selected table preview|-- #
         self.preview_widget = QTableView()
-        self.preview_widget.setMinimumHeight(400)
+        self.preview_widget.setMinimumHeight(500)
         self.preview_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # --|add to layout|-- #
@@ -49,3 +49,8 @@ class TableSelectPreviewWidget(QWidget):
         row_layout.addWidget(self.preview_widget, 2)
 
         outer_layout.addLayout(row_layout)
+
+    def reset(self):
+        self.list_widget.clear()
+        self.preview_widget.setModel(None)
+
