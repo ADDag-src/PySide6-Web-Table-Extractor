@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
 from ui.website_select_widget import WebsiteSelectWidget
 from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
+from backend.app_state_class import AppState
 
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 1000
@@ -14,6 +15,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Web Table Extractor")
         self.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
         self.setMinimumSize(MIN_WIDTH, DEFAULT_HEIGHT)
+
+        # -----|app state|----- #
+        self.app_state = AppState()
 
         # -----|UI setup|----- #
         # ---|main widget|--- #
@@ -55,4 +59,4 @@ class MainWindow(QMainWindow):
     def reset_clicked(self):
         self.web_select_widget.reset()
         self.table_select_widget.reset()
-        #  state reset
+        self.app_state.reset()
