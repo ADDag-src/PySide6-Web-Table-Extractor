@@ -22,7 +22,7 @@ class WebsiteSelectWidget(QWidget):
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setStyleSheet("font-weight: bold; font-size: 22px;")
 
-        subtitle_label = QLabel("Type a public website address or load a local HTML file to detect extractable tables")
+        subtitle_label = QLabel("Enter a website address or load an HTML file to scan for tables")
         subtitle_label.setAlignment(Qt.AlignCenter)
         subtitle_label.setStyleSheet("color: #888; font-size: 19px;")
 

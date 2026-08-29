@@ -3,6 +3,7 @@ from ui.website_select_widget import WebsiteSelectWidget
 from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
 from backend.app_state_class import AppState
+from backend.request_manager import RequestManager
 
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 1000
@@ -17,6 +18,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(MIN_WIDTH, DEFAULT_HEIGHT)
 
         # -----|app state|----- #
+        self.request_manager = RequestManager()
         self.app_state = AppState()
 
         # -----|UI setup|----- #
@@ -48,7 +50,11 @@ class MainWindow(QMainWindow):
         self.bottom_action_row_widget.saveClicked.connect(self.save_clicked)
 
     def website_lookup_clicked(self):
-        pass
+        user_url = self.web_select_widget.url_input.text()
+        print(f"User input: {user_url}")
+        raw_html_or_error = self.request_manager.fetch_html(user_url)
+
+        print(f"Result: {raw_html_or_error}")
 
     def website_local_clicked(self):
         pass
