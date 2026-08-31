@@ -1,16 +1,25 @@
 import requests
 from urllib.parse import urlparse
+import time
 
 
 class RequestManager:
     def __init__(self, timeout: int = 5, max_size: int = 2000000):
         self.timeout = timeout
         self.max_size = max_size
+        self.request_delay = 0.5
+        self.last_request = 0.0
 
     def fetch_html(self, url: str) -> dict:
-        url = url.strip()
+        # ---|limit requests|--- #
+        time_now = time.time()
+        if time_now - self.last_request < self.request_delay:
+            return {"ok": False, "error": "Too many requests"}
+
+        self.last_request = time_now
 
         # ---|url validation|--- #
+        url = url.strip()
         input_url_parsed = urlparse(url)
 
         if input_url_parsed.scheme not in ("http", "https"):
