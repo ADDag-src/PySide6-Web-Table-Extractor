@@ -4,6 +4,7 @@ from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
 from backend.app_state_class import AppState
 from backend.request_manager import RequestManager
+from backend.html_parse_class import HTMLParser
 
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 1000
@@ -54,7 +55,18 @@ class MainWindow(QMainWindow):
         print(f"User input: {user_url}")
         raw_html_or_error = self.request_manager.fetch_html(user_url)
 
-        print(f"Result: {raw_html_or_error}")
+        if raw_html_or_error["ok"]:
+            html = raw_html_or_error["html"]
+
+            parser = HTMLParser(html)
+            parsed_tables = parser.extract_tables()
+
+            print(parsed_tables)
+
+            for table in parsed_tables:
+                print(f"#--|{table.name}|--#")
+                for row in table.rows:
+                    print(row)
 
     def website_local_clicked(self):
         pass
