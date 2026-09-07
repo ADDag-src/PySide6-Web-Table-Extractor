@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMessageBox
 from ui.website_select_widget import WebsiteSelectWidget
 from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
@@ -53,20 +53,43 @@ class MainWindow(QMainWindow):
     def website_lookup_clicked(self):
         user_url = self.web_select_widget.url_input.text()
         print(f"User input: {user_url}")
-        raw_html_or_error = self.request_manager.fetch_html(user_url)
+        result = self.request_manager.fetch_html(user_url)
 
-        if raw_html_or_error["ok"]:
-            html = raw_html_or_error["html"]
+        # ---|error handling|--- #
+        if not result["ok"]:
+            error_text = result["error"]
 
-            parser = HTMLParser(html)
-            parsed_tables = parser.extract_tables()
+            # --|exception|-- #
+            if error_text.strip().startswith("INTERNAL_EXCEPTION:"):
+                full_details = error_text.replace("INTERNAL_EXCEPTION:", "")
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Request Error")
+                msg.setText("Something went wrong while loading the page.")
+                msg.setDetailedText(full_details)
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec()
+                return
 
-            print(parsed_tables)
+            # --|normal errors|-- #
+            QMessageBox.warning(self, "Request Error", error_text)
+            return
 
-            for table in parsed_tables:
-                print(f"#--|{table.name}|--#")
-                for row in table.rows:
-                    print(row)
+        # ---|html parsing|--- #
+        html = result["html"]
+
+        parser = HTMLParser(html)
+        parsed_tables = parser.extract_tables()
+
+        if not parsed_tables:
+            QMessageBox.information(self, "No Tables Found", "The page contains no HTML tables.")
+            return
+
+        QMessageBox.information(self, f"Success!", f"{len(parsed_tables)} HTML tables Found!")
+        for table in parsed_tables:
+            print(f"#--|{table.name}|--#")
+            for row in table.rows:
+                print(row)
 
     def website_local_clicked(self):
         pass

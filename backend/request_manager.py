@@ -23,9 +23,11 @@ class RequestManager:
         input_url_parsed = urlparse(url)
 
         if input_url_parsed.scheme not in ("http", "https"):
-            return {"ok": False, "error": "URL Error: Invalid URL scheme"}
+            return {"ok": False, "error": "URL Error: Please enter a full web address starting with http://"
+                                          " or https://"}
         if not input_url_parsed.netloc:
-            return {"ok": False, "error": "URL Error: Missing domain"}
+            return {"ok": False, "error": "URL Error: This doesn't look like a website address."
+                                          " Try something like https://example.com"}
         
         try:
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
@@ -39,12 +41,12 @@ class RequestManager:
 
                 for redirect in potential_redirects:
                     if redirect in url_lower:
-                        return {"ok": False, "error": "Redirected to a non public page"}
+                        return {"ok": False, "error": "URL Error: Redirected to a non public page"}
 
             # ---|check content type--- #
             content_type = response.headers.get("Content-Type", "").lower()
             if not ("text/html" in content_type or "application/xhtml+xml" in content_type):
-                return {"ok": False, "error": f"Unsupported content type: {content_type}"}
+                return {"ok": False, "error": f"URL Error: Unsupported content type: {content_type}"}
 
             # ---|limit file size--- #
             content_length = response.headers.get("Content-Length")
@@ -52,11 +54,12 @@ class RequestManager:
                 try:
                     size = int(content_length)
                     if size > self.max_size:
-                        return {"ok": False, "error": "Response too large"}
+                        return {"ok": False, "error": "URL Error: Response too large"}
                 except ValueError:
                     pass
 
             # ---|return html--- #
             return {"ok": True, "html": response.text}
         except Exception as error:
-            return {"ok": False, "error": str(error)}
+            return {"ok": False, "error": "INTERNAL_EXCEPTION:" + str(error)}
+
