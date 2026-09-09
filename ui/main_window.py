@@ -88,6 +88,10 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, f"Success!", f"{len(parsed_tables)} HTML tables Found!")
         for table in parsed_tables:
             print(f"#--|{table.name}|--#")
+
+            if table.headers:
+                print(f"Headers:\n {table.headers}")
+
             for row in table.rows:
                 print(row)
 

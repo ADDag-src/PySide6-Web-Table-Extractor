@@ -12,21 +12,29 @@ class HTMLParser:
         table_tags = self.soup.find_all("table")
 
         for index, table_tag in enumerate(table_tags):
-            rows = self.parse_table(table_tag)
+            headers, rows = self.parse_table(table_tag)
             name = self.generate_name(table_tag, index)
-            tables.append(ParsedTable(name, rows))
+            tables.append(ParsedTable(name, rows, headers))
 
         return tables
 
     @staticmethod
-    def parse_table(table_tag) -> list[list[str]]:
+    def parse_table(table_tag) -> tuple[list[str], list[list[str]]]:
+        headers = []
         rows = []
+
+        # ---|parse all rows|--- #
         for tr in table_tag.find_all("tr"):
             cells = tr.find_all(["td", "th"])
             row = [" ".join(cell.stripped_strings) for cell in cells]
             if row:
                 rows.append(row)
-        return rows
+
+        # ---|detect headers|--- #
+        if table_tag.find_all("th") and rows:
+            headers = rows[0]
+            rows = rows[1:]
+        return headers, rows
 
     @staticmethod
     def generate_name(table_tag, index: int) -> str:

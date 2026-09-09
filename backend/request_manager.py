@@ -25,9 +25,11 @@ class RequestManager:
         if input_url_parsed.scheme not in ("http", "https"):
             return {"ok": False, "error": "URL Error: Please enter a full web address starting with http://"
                                           " or https://"}
-        if not input_url_parsed.netloc:
-            return {"ok": False, "error": "URL Error: This doesn't look like a website address."
-                                          " Try something like https://example.com"}
+
+        netloc = input_url_parsed.netloc.lower()
+
+        if "." not in netloc and netloc != "localhost":
+            return {"ok": False, "error": "URL Error: Please enter a full website address"}
         
         try:
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
