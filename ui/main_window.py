@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
         self.web_select_widget.localSelectClicked.connect(self.website_local_clicked)
         self.bottom_action_row_widget.resetClicked.connect(self.reset_clicked)
         self.bottom_action_row_widget.saveClicked.connect(self.save_clicked)
+        self.table_select_widget.tableSelected.connect(self.table_selected)
 
     def website_lookup_clicked(self):
         user_url = self.web_select_widget.url_input.text()
@@ -85,7 +86,19 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "No Tables Found", "The page contains no HTML tables.")
             return
 
+        # ---|update state|--- #
+        self.app_state.reset()
+        self.app_state.current_website_address = user_url
+        self.app_state.website_html = html
+        self.app_state.tables_list = parsed_tables
+        self.app_state.selected_table_index = None
+
         QMessageBox.information(self, f"Success!", f"{len(parsed_tables)} HTML tables Found!")
+
+        # ---|populate UI|--- #
+        self.table_select_widget.set_tables(parsed_tables)
+
+        # ---|debug prints|--- #
         for table in parsed_tables:
             print(f"#--|{table.name}|--#")
 
@@ -100,6 +113,10 @@ class MainWindow(QMainWindow):
 
     def save_clicked(self):
         pass
+
+    def table_selected(self, index):
+        self.app_state.selected_table_index = index
+        print(f"Internal index changed to {index}")
 
     def reset_clicked(self):
         self.web_select_widget.reset()

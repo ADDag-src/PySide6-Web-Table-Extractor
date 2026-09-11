@@ -12,14 +12,14 @@ class HTMLParser:
         table_tags = self.soup.find_all("table")
 
         for index, table_tag in enumerate(table_tags):
-            headers, rows = self.parse_table(table_tag)
-            name = self.generate_name(table_tag, index)
+            headers, rows = self._parse_table(table_tag)
+            name = self._generate_name(table_tag, index)
             tables.append(ParsedTable(name, rows, headers))
 
         return tables
 
     @staticmethod
-    def parse_table(table_tag) -> tuple[list[str], list[list[str]]]:
+    def _parse_table(table_tag) -> tuple[list[str], list[list[str]]]:
         headers = []
         rows = []
 
@@ -37,7 +37,7 @@ class HTMLParser:
         return headers, rows
 
     @staticmethod
-    def generate_name(table_tag, index: int) -> str:
+    def _generate_name(table_tag, index: int) -> str:
         caption = table_tag.find("caption")
         if caption:
             text = " ".join(caption.stripped_strings)

@@ -1,12 +1,19 @@
 from PySide6.QtWidgets import (QWidget, QSizePolicy, QHBoxLayout, QVBoxLayout, QListWidget, QScrollArea, QTableView,
-                               QLabel)
-from PySide6.QtCore import Qt
+                               QLabel, QHeaderView)
+from PySide6.QtCore import Qt, Signal
+from backend.parced_table import ParsedTable
+from PySide6.QtGui import QStandardItemModel, QStandardItem
 
 
 class TableSelectPreviewWidget(QWidget):
+    # ---|custom signals|--- #
+    tableSelected = Signal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+
+        self.tables = []
 
         # ---|outer layout|--- #
         outer_layout = QVBoxLayout(self)
@@ -34,6 +41,8 @@ class TableSelectPreviewWidget(QWidget):
         self.list_widget = QListWidget()
         self.list_widget.setMinimumHeight(500)
         self.list_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.list_widget.setStyleSheet("font-size: 16px;")
+        self.list_widget.currentRowChanged.connect(self._table_selected_changed)
 
         list_scroll = QScrollArea()
         list_scroll.setWidgetResizable(True)
@@ -43,6 +52,11 @@ class TableSelectPreviewWidget(QWidget):
         self.preview_widget = QTableView()
         self.preview_widget.setMinimumHeight(500)
         self.preview_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.preview_widget.setEditTriggers(QTableView.NoEditTriggers)
+
+        header = self.preview_widget.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Interactive)
+        header.setStretchLastSection(True)
 
         # --|add to layout|-- #
         row_layout.addWidget(list_scroll, 1)
@@ -50,7 +64,45 @@ class TableSelectPreviewWidget(QWidget):
 
         outer_layout.addLayout(row_layout)
 
+    def set_tables(self, tables: list[ParsedTable]):
+        self.reset()
+        self.tables = tables
+
+        for table in self.tables:
+            self.list_widget.addItem(table.name)
+
+    def _table_selected_changed(self, index):
+        if index < 0 or index >= len(self.tables):
+            self.preview_widget.setModel(None)
+            return
+
+        # ---|update state|--- #
+        self.tableSelected.emit(index)
+
+        # ---|build preview model and display|--- #
+        table = self.tables[index]
+        model = self._build_model(table)
+        self.preview_widget.setModel(model)
+        self.preview_widget.horizontalHeader().resizeSections(QHeaderView.ResizeToContents)
+
+    @staticmethod
+    def _build_model(table: ParsedTable):
+        model = QStandardItemModel()
+
+        # ---|headers|--- #
+        if table.headers:
+            model.setColumnCount(len(table.headers))
+            model.setHorizontalHeaderLabels(table.headers)
+
+        # ---|rows|--- #
+        for row in table.rows:
+            items = [QStandardItem(str(cell)) for cell in row]
+            model.appendRow(items)
+
+        return model
+
     def reset(self):
+        self.tables = []
         self.list_widget.clear()
         self.preview_widget.setModel(None)
 
