@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from backend.parced_table import ParsedTable
+from backend.parsed_table import ParsedTable
 
 
 class HTMLParser:
@@ -44,4 +44,3 @@ class HTMLParser:
             if text:
                 return f"Table {index + 1}: {text}"
         return f"Table {index + 1}: No title"
-

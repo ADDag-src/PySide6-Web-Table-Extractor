@@ -67,4 +67,7 @@ def create_dark_palette():
     palette.setColor(QPalette.Disabled, QPalette.Link, QColor(48, 140, 198))
     palette.setColor(QPalette.Disabled, QPalette.LinkVisited, QColor(255, 0, 255))
 
+    palette.setColor(QPalette.Base, QColor(45, 45, 45))
+    palette.setColor(QPalette.AlternateBase, QColor(35, 35, 35))
+
     return palette

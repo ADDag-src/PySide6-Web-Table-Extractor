@@ -1,4 +1,4 @@
-from backend.parced_table import ParsedTable
+from backend.parsed_table import ParsedTable
 
 
 class AppState:

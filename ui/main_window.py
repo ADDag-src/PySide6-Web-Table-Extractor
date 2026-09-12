@@ -45,15 +45,14 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.bottom_action_row_widget)
 
         # -----|signal connections|----- #
-        self.web_select_widget.websiteLookUpClicked.connect(self.website_lookup_clicked)
-        self.web_select_widget.localSelectClicked.connect(self.website_local_clicked)
+        self.web_select_widget.websiteLookUpClicked.connect(self._website_lookup_clicked)
+        self.web_select_widget.localSelectClicked.connect(self._website_local_clicked)
         self.bottom_action_row_widget.resetClicked.connect(self.reset_clicked)
         self.bottom_action_row_widget.saveClicked.connect(self.save_clicked)
         self.table_select_widget.tableSelected.connect(self.table_selected)
 
-    def website_lookup_clicked(self):
+    def _website_lookup_clicked(self):
         user_url = self.web_select_widget.url_input.text()
-        print(f"User input: {user_url}")
         result = self.request_manager.fetch_html(user_url)
 
         # ---|error handling|--- #
@@ -76,9 +75,14 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Request Error", error_text)
             return
 
-        # ---|html parsing|--- #
         html = result["html"]
+        self._parse_html_into_state(user_url, html)
 
+    def _website_local_clicked(self):
+        pass
+
+    def _parse_html_into_state(self, user_url: str, html: str):
+        # ---|html parsing|--- #
         parser = HTMLParser(html)
         parsed_tables = parser.extract_tables()
 
@@ -98,25 +102,11 @@ class MainWindow(QMainWindow):
         # ---|populate UI|--- #
         self.table_select_widget.set_tables(parsed_tables)
 
-        # ---|debug prints|--- #
-        for table in parsed_tables:
-            print(f"#--|{table.name}|--#")
-
-            if table.headers:
-                print(f"Headers:\n {table.headers}")
-
-            for row in table.rows:
-                print(row)
-
-    def website_local_clicked(self):
-        pass
-
     def save_clicked(self):
         pass
 
     def table_selected(self, index):
         self.app_state.selected_table_index = index
-        print(f"Internal index changed to {index}")
 
     def reset_clicked(self):
         self.web_select_widget.reset()

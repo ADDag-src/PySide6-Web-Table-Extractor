@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (QWidget, QSizePolicy, QHBoxLayout, QVBoxLayout, QListWidget, QScrollArea, QTableView,
                                QLabel, QHeaderView)
 from PySide6.QtCore import Qt, Signal
-from backend.parced_table import ParsedTable
+from backend.parsed_table import ParsedTable
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 
 
@@ -53,6 +53,7 @@ class TableSelectPreviewWidget(QWidget):
         self.preview_widget.setMinimumHeight(500)
         self.preview_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.preview_widget.setEditTriggers(QTableView.NoEditTriggers)
+        self.preview_widget.setAlternatingRowColors(True)
 
         header = self.preview_widget.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
