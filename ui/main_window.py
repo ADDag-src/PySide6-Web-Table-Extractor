@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMessageBox, QFileDialog
 from ui.website_select_widget import WebsiteSelectWidget
 from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
@@ -79,7 +79,34 @@ class MainWindow(QMainWindow):
         self._parse_html_into_state(user_url, html)
 
     def _website_local_clicked(self):
-        pass
+        # ---|open and read local html file|--- #
+        html_path, _ = QFileDialog.getOpenFileName(self, "Select Local HTML File", "",
+                                                   "HTML Files (*.html *.htm *.xhtml)")
+
+        if not html_path:
+            return
+
+        try:
+            with open(html_path, "r", encoding="utf-8") as file:
+                html = file.read()
+        except Exception as error:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowTitle("File Error")
+            msg.setText("Something went wrong while reading the file.")
+            msg.setDetailedText(str(error))
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+            return
+
+        print(html)
+
+        # ---|basic validation|--- #
+        if "<html" not in html.lower():
+            QMessageBox.warning(self, "Invalid File", "This file does not appear to contain HTML.")
+            return
+
+        self._parse_html_into_state(html_path, html)
 
     def _parse_html_into_state(self, user_url: str, html: str):
         # ---|html parsing|--- #
@@ -97,7 +124,7 @@ class MainWindow(QMainWindow):
         self.app_state.tables_list = parsed_tables
         self.app_state.selected_table_index = None
 
-        QMessageBox.information(self, f"Success!", f"{len(parsed_tables)} HTML tables Found!")
+        QMessageBox.information(self, f"Success!", f"{len(parsed_tables)} HTML table(s) Found!")
 
         # ---|populate UI|--- #
         self.table_select_widget.set_tables(parsed_tables)
