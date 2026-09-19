@@ -26,7 +26,7 @@ class HTMLParser:
         # ---|parse all rows|--- #
         for tr in table_tag.find_all("tr"):
             cells = tr.find_all(["td", "th"])
-            row = [" ".join(cell.stripped_strings) for cell in cells]
+            row = [cell.get_text(" ", strip=True) for cell in cells]
             if row:
                 rows.append(row)
 

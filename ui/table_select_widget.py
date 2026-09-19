@@ -97,7 +97,13 @@ class TableSelectPreviewWidget(QWidget):
 
         # ---|rows|--- #
         for row in table.rows:
-            items = [QStandardItem(str(cell)) for cell in row]
+            items = []
+
+            for cell in row:
+                item = QStandardItem(str(cell))
+                item.setTextAlignment(Qt.AlignCenter)
+                items.append(item)
+
             model.appendRow(items)
 
         return model

@@ -2,9 +2,11 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMessageBox, QF
 from ui.website_select_widget import WebsiteSelectWidget
 from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
+from backend.parsed_table import ParsedTable
 from backend.app_state_class import AppState
 from backend.request_manager import RequestManager
 from backend.html_parse_class import HTMLParser
+import pandas as pd
 
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 1000
@@ -47,9 +49,9 @@ class MainWindow(QMainWindow):
         # -----|signal connections|----- #
         self.web_select_widget.websiteLookUpClicked.connect(self._website_lookup_clicked)
         self.web_select_widget.localSelectClicked.connect(self._website_local_clicked)
-        self.bottom_action_row_widget.resetClicked.connect(self.reset_clicked)
-        self.bottom_action_row_widget.saveClicked.connect(self.save_clicked)
-        self.table_select_widget.tableSelected.connect(self.table_selected)
+        self.bottom_action_row_widget.resetClicked.connect(self._reset_clicked)
+        self.bottom_action_row_widget.saveClicked.connect(self._save_clicked)
+        self.table_select_widget.tableSelected.connect(self._table_selected)
 
     def _website_lookup_clicked(self):
         user_url = self.web_select_widget.url_input.text()
@@ -99,14 +101,32 @@ class MainWindow(QMainWindow):
             msg.exec()
             return
 
-        print(html)
-
         # ---|basic validation|--- #
         if "<html" not in html.lower():
             QMessageBox.warning(self, "Invalid File", "This file does not appear to contain HTML.")
             return
 
         self._parse_html_into_state(html_path, html)
+
+    def _save_clicked(self):
+        selected_index = self.app_state.selected_table_index
+        if selected_index is None:
+            QMessageBox.warning(self, "Error", "No table was selected")
+            return
+
+        selected_table = self.app_state.tables_list[selected_index]
+
+        table_dataframe = self._convert_table_to_dataframe(selected_table)
+        print(table_dataframe)
+        print(table_dataframe.columns)
+
+    def _reset_clicked(self):
+        self.web_select_widget.reset()
+        self.table_select_widget.reset()
+        self.app_state.reset()
+
+    def _table_selected(self, index):
+        self.app_state.selected_table_index = index
 
     def _parse_html_into_state(self, user_url: str, html: str):
         # ---|html parsing|--- #
@@ -129,13 +149,28 @@ class MainWindow(QMainWindow):
         # ---|populate UI|--- #
         self.table_select_widget.set_tables(parsed_tables)
 
-    def save_clicked(self):
-        pass
+    @staticmethod
+    def _convert_table_to_dataframe(table: ParsedTable) -> pd.DataFrame:
+        # ---|no headers|--- #
+        if not table.headers:
+            return pd.DataFrame(table.rows)
 
-    def table_selected(self, index):
-        self.app_state.selected_table_index = index
+        # ---|check if number of columns matches header list|--- #
+        headers = table.headers.copy()
 
-    def reset_clicked(self):
-        self.web_select_widget.reset()
-        self.table_select_widget.reset()
-        self.app_state.reset()
+        max_columns = max(len(row) for row in table.rows)
+        header_num = len(headers)
+
+        # --|fewer headers|-- #
+        if header_num < max_columns:
+            differance = max_columns - header_num
+            for i in range(differance):
+                col_index = header_num + i + 1
+                headers.append(f"POTENTIAL HEADER MISALIGNMENT (Column {col_index})")
+
+        # --|more headers than data columns|-- #
+        if header_num > max_columns:
+            headers = headers[:max_columns]
+
+        return pd.DataFrame(table.rows, columns=headers)
+
