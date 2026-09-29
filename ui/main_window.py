@@ -6,7 +6,9 @@ from backend.parsed_table import ParsedTable
 from backend.app_state_class import AppState
 from backend.request_manager import RequestManager
 from backend.html_parse_class import HTMLParser
+from backend.path_resolvers import default_save_dir
 import pandas as pd
+from pathlib import Path
 
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 1000
@@ -115,10 +117,53 @@ class MainWindow(QMainWindow):
             return
 
         selected_table = self.app_state.tables_list[selected_index]
-
         table_dataframe = self._convert_table_to_dataframe(selected_table)
-        print(table_dataframe)
-        print(table_dataframe.columns)
+
+        # ---|get save path|--- #
+        default_path = str(default_save_dir())
+        format_string = "Excel File (*.xlsx);;CSV File (*.csv)"
+        file_path, selected_format = QFileDialog.getSaveFileName(self, "Save Table", default_path, format_string)
+
+        if not file_path:
+            return
+
+        # ---|fallback file path verification|--- #
+        extension_added = False
+
+        if selected_format.startswith("Excel") and not file_path.endswith(".xlsx"):
+            file_path += ".xlsx"
+            extension_added = True
+        elif selected_format.startswith("CSV") and not file_path.endswith(".csv"):
+            file_path += ".csv"
+            extension_added = True
+
+        # --|file exist check|-- #
+        if extension_added and Path(file_path).exists():
+            reply = QMessageBox.question(self, "File Already Exists",
+                                         f"{Path(file_path).name} already exists. Overwrite it?",
+                                         QMessageBox.Yes | QMessageBox.No,
+                                         QMessageBox.No)
+            if reply != QMessageBox.Yes:
+                return
+
+        # ---|export|--- #
+        try:
+            if selected_format.startswith("Excel"):
+                table_dataframe.to_excel(file_path, index=False)
+            elif selected_format.startswith("CSV"):
+                table_dataframe.to_csv(file_path, index=False)
+
+        except Exception as error:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowTitle("Save Error")
+            msg.setText("Something went wrong while saving the file.")
+            msg.setDetailedText(str(error))
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+            return
+
+        QMessageBox.information(self, "Success!", "Table saved successfully!")
 
     def _reset_clicked(self):
         self.web_select_widget.reset()
@@ -154,6 +199,10 @@ class MainWindow(QMainWindow):
         # ---|no headers|--- #
         if not table.headers:
             return pd.DataFrame(table.rows)
+
+        # ---|no data rows|--- #
+        if not table.rows:
+            return pd.DataFrame(columns=table.headers)
 
         # ---|check if number of columns matches header list|--- #
         headers = table.headers.copy()
