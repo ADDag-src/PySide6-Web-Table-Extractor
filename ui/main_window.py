@@ -1,7 +1,12 @@
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMessageBox, QFileDialog
 from ui.website_select_widget import WebsiteSelectWidget
 from ui.table_select_widget import TableSelectPreviewWidget
 from ui.bottom_action_widget import BottomActionBarWidget
+from ui.main_menu import MainMenu
+from ui.about_dialog import AboutDialog
+from ui.help_dialog import AppHelpDialog
 from backend.parsed_table import ParsedTable
 from backend.app_state_class import AppState
 from backend.request_manager import RequestManager
@@ -27,6 +32,14 @@ class MainWindow(QMainWindow):
         self.app_state = AppState()
 
         # -----|UI setup|----- #
+        # ---|menu bar|--- #
+        self.menu_bar = MainMenu(self)
+        self.setMenuBar(self.menu_bar)
+        self.menu_bar.exitClicked.connect(self._exit_app)
+        self.menu_bar.openSaveFolderClicked.connect(self._open_save_folder_clicked)
+        self.menu_bar.appHelpClicked.connect(self._app_help_clicked)
+        self.menu_bar.aboutClicked.connect(self._about_clicked)
+
         # ---|main widget|--- #
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -82,6 +95,34 @@ class MainWindow(QMainWindow):
         html = result["html"]
         self._parse_html_into_state(user_url, html)
 
+    # --|application menu actions related methods|-- #
+    def _exit_app(self):
+        self.close()
+
+    def closeEvent(self, event):
+        reply = QMessageBox.question(self, "Exit Confirmation", "Are you sure you want to exit?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply != QMessageBox.Yes:
+            event.ignore()
+            return
+
+        event.accept()
+
+    @staticmethod
+    def _open_save_folder_clicked():
+        save_dir = default_save_dir()
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(save_dir)))
+
+    def _app_help_clicked(self):
+        dialog = AppHelpDialog(self)
+        dialog.exec()
+
+    def _about_clicked(self):
+        dialog = AboutDialog(self)
+        dialog.exec()
+
+    # --|main app related methods|-- #
     def _website_local_clicked(self):
         # ---|open and read local html file|--- #
         html_path, _ = QFileDialog.getOpenFileName(self, "Select Local HTML File", "",
