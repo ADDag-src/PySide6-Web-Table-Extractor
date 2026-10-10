@@ -36,6 +36,14 @@ class RequestManager:
 
             response = requests.get(url, timeout=self.timeout, headers=headers, allow_redirects=True)
 
+            # ---|check status code|--- #
+            if response.status_code in (403, 429, 503):
+                return {"ok": False, "error": f"URL Error: The site refused the request (HTTP {response.status_code}). "
+                                              "It may block automated tools. Try saving the page from your browser and"
+                                              " use Load Local HTML instead."}
+            if not response.ok:
+                return {"ok": False, "error": f"URL Error: The server returned HTTP {response.status_code}"}
+
             # ---|check potential redirects|--- #
             if response.url != url:
                 url_lower = response.url.lower()
@@ -45,12 +53,12 @@ class RequestManager:
                     if redirect in url_lower:
                         return {"ok": False, "error": "URL Error: Redirected to a non public page"}
 
-            # ---|check content type--- #
+            # ---|check content type|--- #
             content_type = response.headers.get("Content-Type", "").lower()
             if not ("text/html" in content_type or "application/xhtml+xml" in content_type):
                 return {"ok": False, "error": f"URL Error: Unsupported content type: {content_type}"}
 
-            # ---|limit file size--- #
+            # ---|limit file size|--- #
             content_length = response.headers.get("Content-Length")
             if content_length is not None:
                 try:
@@ -60,8 +68,9 @@ class RequestManager:
                 except ValueError:
                     pass
 
-            # ---|return html--- #
+            # ---|return html|--- #
             return {"ok": True, "html": response.text}
+
         except Exception as error:
             return {"ok": False, "error": "INTERNAL_EXCEPTION:" + str(error)}
 

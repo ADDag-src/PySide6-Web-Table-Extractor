@@ -46,7 +46,7 @@ class WebsiteSelectWidget(QWidget):
         self.lookup_button.clicked.connect(self.websiteLookUpClicked)
 
         # --|load local|-- #
-        self.local_button = QPushButton("Load local HTML")
+        self.local_button = QPushButton("Load Local HTML")
         self.local_button.setStyleSheet(normal_button_stylesheet())
         self.local_button.setFixedWidth(160)
         self.local_button.clicked.connect(self.localSelectClicked)
