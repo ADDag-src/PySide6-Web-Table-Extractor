@@ -230,6 +230,9 @@ class MainWindow(QMainWindow):
         self.app_state.tables_list = parsed_tables
         self.app_state.selected_table_index = None
 
+        # ---|update ui|--- #
+        self.web_select_widget.url_input.setText(user_url)
+
         QMessageBox.information(self, f"Success!", f"{len(parsed_tables)} HTML table(s) Found!")
 
         # ---|populate UI|--- #
